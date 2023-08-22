@@ -1,4 +1,5 @@
 import './App.css';
+import Counter from './features/counter/Counter';
 
 function App() {
   return (
@@ -6,7 +7,9 @@ function App() {
       <header className="App-header">
         <p>Redux Toolkit.</p>
       </header>
-      <main className='App-body'></main>
+      <main className="App-body">
+        <Counter />
+      </main>
     </div>
   );
 }
