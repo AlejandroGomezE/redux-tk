@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { postAdded } from './postsSlice';
+import { addPosts } from './postsSlice';
 import { selectAllUsers } from '../users/usersSlice';
 
 const AddPostForm = () => {
@@ -12,23 +12,35 @@ const AddPostForm = () => {
   const [content, setContent] = useState('');
   const [userId, setUserId] = useState('');
 
+  const [addingState, setAddingState] = useState('idle');
+
   const users = useSelector(selectAllUsers);
 
   const onTitleChanged = (e) => setTitle(e.target.value);
   const onContentChanged = (e) => setContent(e.target.value);
   const onAuthorChanged = (e) => setUserId(e.target.value);
 
-  const onSavePostClicked = (e) => {
+  const canSave = Boolean(title && content && userId) && addingState === 'idle';
+
+  const onSavePostClicked = async (e) => {
     e.stopPropagation();
 
-    if (title && content) {
-      dispatch(postAdded(title, content, userId));
-    }
+    if (canSave) {
+      try {
+        setAddingState('pending');
+        // Unwrap throws an error if addPosts is rejected
+        dispatch(addPosts({ title, body: content, userId })).unwrap();
 
-    setTitle('');
-    setContent('');
-    setUserId('');
-    selectRef.current.selectedIndex = 0;
+        setTitle('');
+        setContent('');
+        setUserId('');
+        selectRef.current.selectedIndex = 0;
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setAddingState('idle');
+      }
+    }
   };
 
   const userOptions = users.map((user) => (
@@ -36,8 +48,6 @@ const AddPostForm = () => {
       {user.name}
     </option>
   ));
-
-  const canSave = Boolean(title && content && userId);
 
   return (
     <section>
